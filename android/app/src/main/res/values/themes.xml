@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.AIfound" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/ink</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- AIfound.Label 같은 이름의 '부모' 스타일 (없으면 AAPT 오류) -->
+    <style name="AIfound" />
+
+    <!-- 화면 아래 큰 검정 버튼 -->
+    <style name="AIfound.PrimaryButton" parent="Widget.Material3.Button">
+        <item name="android:layout_height">56dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
+    <style name="AIfound.OutlineButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:layout_height">48dp</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="strokeColor">@color/ink</item>
+        <item name="cornerRadius">10dp</item>
+    </style>
+
+    <style name="AIfound.Label">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:layout_marginBottom">6dp</item>
+    </style>
+
+    <style name="AIfound.Hint">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/ink_quiet</item>
+    </style>
+
+    <style name="AIfound.Input">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textColorHint">#9A9A9A</item>
+    </style>
+
+    <!-- S07 필터 버튼 (종류/색/건물/날짜). 선택되면 FoundListActivity 가 배경을 바꾼다 -->
+    <style name="AIfound.Filter">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:background">@drawable/bg_filter_off</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+</resources>

@@ -1,0 +1,6 @@
+file,category,color,brand,has_pii
+airpods_white.jpg,이어폰,흰색,Apple,0
+wallet_black.jpg,지갑,검정,,0
+idcard.jpg,학생증·카드,흰색,,1
+phone_case.jpg,휴대폰,파랑,Samsung,0
+umbrella.jpg,기타,남색,,0

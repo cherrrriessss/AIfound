@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- S08 습득물 상세 (와이어프레임 S08_FoundDetail) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_header" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 가림 처리된 사진 -->
+            <ImageView
+                android:id="@+id/ivPhoto"
+                android:layout_width="match_parent"
+                android:layout_height="280dp"
+                android:background="@color/line_soft"
+                android:contentDescription="습득물 사진 (개인정보 가림 처리됨)"
+                android:scaleType="centerCrop" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:id="@+id/tvLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/accent"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/ink"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <!-- AI 자동 태그 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_sparkle"
+                        android:tint="@color/ink_quiet" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="AI 자동 태그"
+                        android:textColor="@color/ink_quiet"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/tagGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:chipSpacingHorizontal="6dp"
+                    app:chipSpacingVertical="6dp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@color/line_soft" />
+
+                <!-- 정보 표: 비어 있는 줄은 코드에서 숨김 -->
+                <LinearLayout
+                    android:id="@+id/infoTable"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="vertical" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnLockerMap"
+                    style="@style/AIfound.OutlineButton"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="16dp"
+                    android:text="보관함 위치 보기"
+                    android:textSize="14sp"
+                    app:icon="@drawable/ic_pin"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/ink"
+                    app:strokeColor="@color/line" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 아래 버튼 2개 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/line_soft" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="20dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReportLost"
+            style="@style/AIfound.OutlineButton"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
+            android:text="분실 신고하기"
+            android:textSize="14sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMine"
+            style="@style/AIfound.PrimaryButton"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1.4"
+            android:text="내 물건이에요"
+            android:textSize="15sp" />
+    </LinearLayout>
+</LinearLayout>

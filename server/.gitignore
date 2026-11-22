@@ -1,0 +1,10 @@
+.env
+__pycache__/
+.pytest_cache/
+.venv/
+
+# 정확도 측정용 사진·결과 (개인정보 포함 가능)
+eval/photos/
+eval/result.csv
+eval/summary.md
+eval/labels.csv

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_header" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_soft"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_check" />
+
+                <TextView
+                    android:id="@+id/tvVerified"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textColor="@color/ink"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/AIfound.Label"
+                android:layout_marginTop="20dp"
+                android:labelFor="@+id/etName"
+                android:text="이름" />
+
+            <EditText
+                android:id="@+id/etName"
+                style="@style/AIfound.Input"
+                android:hint="홍길동"
+                android:importantForAutofill="no"
+                android:inputType="textPersonName"
+                android:maxLength="30" />
+
+            <TextView
+                style="@style/AIfound.Label"
+                android:layout_marginTop="20dp"
+                android:labelFor="@+id/etDept"
+                android:text="학과" />
+
+            <EditText
+                android:id="@+id/etDept"
+                style="@style/AIfound.Input"
+                android:hint="예: AI융합학부"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLength="50" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="매칭 알림을 받으시겠어요?"
+                    android:textColor="@color/ink"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    style="@style/AIfound.Hint"
+                    android:layout_marginTop="6dp"
+                    android:lineSpacingExtra="3dp"
+                    android:text="내 분실 신고와 비슷한 습득물이 등록되면 바로 푸시로 알려드려요."
+                    android:textSize="13sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnNotify"
+                    style="@style/AIfound.OutlineButton"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="12dp"
+                    android:text="알림 허용하기" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnStart"
+        style="@style/AIfound.PrimaryButton"
+        android:layout_width="match_parent"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        android:text="시작하기" />
+</LinearLayout>
