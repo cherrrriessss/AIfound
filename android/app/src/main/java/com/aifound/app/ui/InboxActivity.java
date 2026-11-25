@@ -1,6 +1,5 @@
 package com.aifound.app.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +15,7 @@ import com.aifound.app.net.ApiClient;
 import com.aifound.app.net.MatchModels;
 import com.aifound.app.net.Models;
 import com.aifound.app.util.Fmt;
+import com.aifound.app.util.Push;
 import com.aifound.app.util.Ui;
 
 import java.util.List;
@@ -100,16 +100,7 @@ public class InboxActivity extends AppCompatActivity {
     }
 
     private void openTarget(MatchModels.Notification n) {
-        String matchId = str(n.data, "match_id");
-        if ("match".equals(n.type) && matchId != null) {
-            MatchDetailActivity.open(this, matchId);
-        } else if ("reminder".equals(n.type) && matchId != null) {
-            ClaimActivity.open(this, matchId);
-        } else if ("owner_found".equals(n.type)) {
-            startActivity(new Intent(this, MyFoundActivity.class));
-        } else if ("received".equals(n.type)) {
-            startActivity(new Intent(this, HistoryActivity.class));
-        }
+        Push.open(this, n.type, str(n.data, "match_id"));   // S05 푸시를 눌렀을 때와 같은 규칙
     }
 
     private static String str(Map<String, Object> data, String key) {

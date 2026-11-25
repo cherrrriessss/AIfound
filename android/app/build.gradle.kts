@@ -2,6 +2,12 @@ plugins {
     id("com.android.application")
 }
 
+// S05 푸시: Firebase 설정 파일(깃에 안 올림)이 있으면 FCM 을 켜고, 없으면 푸시 없이 그대로 빌드된다.
+// 파일은 팀원에게 받아 android/app/google-services.json 에 넣기 (match-server/ANDROID.md 4번)
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.aifound.app"
     compileSdk = 34
@@ -46,4 +52,7 @@ dependencies {
     // S18·S23 당겨서 새로고침, S20 수령 QR 코드 만들기
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("com.google.zxing:core:3.5.3")
+    // S05 푸시 알림 (FCM)
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging")
 }

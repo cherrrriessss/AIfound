@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.aifound.app.R;
 import com.aifound.app.data.TokenStore;
+import com.aifound.app.util.Push;
 import com.aifound.app.net.ApiCallback;
 import com.aifound.app.net.ApiClient;
 import com.aifound.app.net.Models;
@@ -33,7 +34,9 @@ public class LoginActivity extends AppCompatActivity {
 
         // 이미 로그인돼 있으면 바로 홈으로
         if (TokenStore.token(this) != null) {
-            startActivity(new Intent(this, HomeActivity.class));
+            // S05 푸시를 눌러서 들어왔으면 홈 위에 그 화면(매칭 상세 등)을 바로 연다
+            if (Push.hasTarget(getIntent().getExtras())) Push.openFromLaunch(this, getIntent().getExtras());
+            else startActivity(new Intent(this, HomeActivity.class));
             finish();
             return;
         }
