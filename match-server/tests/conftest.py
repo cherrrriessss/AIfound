@@ -15,3 +15,4 @@ TEST_COORDS = {
 def campus(monkeypatch):
     monkeypatch.setattr(config, "BUILDING_COORDS", TEST_COORDS)
     monkeypatch.setattr(config, "NEARBY_BUILDINGS", {})
+    monkeypatch.setattr(config, "NEARBY_METERS", 200)   # 위 가짜 좌표 기준
