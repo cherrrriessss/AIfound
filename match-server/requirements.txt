@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic>=2
+google-genai
+supabase
+firebase-admin
+# tests
+pytest
+httpx
