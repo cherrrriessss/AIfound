@@ -10,6 +10,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")   # service_role 키 (서버 전용)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 FIREBASE_CREDENTIALS = os.getenv("FIREBASE_CREDENTIALS", "firebase-service-account.json")
+PHOTO_BUCKET = os.getenv("PHOTO_BUCKET", "found-photos")   # 김준희 서버와 같은 사진 버킷
 INTERNAL_KEY = os.getenv("INTERNAL_KEY", "change-me")         # 서버끼리 호출할 때 쓰는 비밀값
 TIMEZONE = "Asia/Seoul"
 

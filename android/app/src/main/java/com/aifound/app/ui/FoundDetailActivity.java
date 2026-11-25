@@ -14,10 +14,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.aifound.app.R;
 import com.aifound.app.net.ApiCallback;
 import com.aifound.app.net.ApiClient;
+import com.aifound.app.net.MatchModels;
 import com.aifound.app.net.Models;
 import com.aifound.app.util.Fmt;
 import com.aifound.app.util.Steps;
-import com.aifound.app.util.TabBar;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
@@ -26,6 +26,7 @@ import java.util.List;
 /**
  * S08 습득물 상세 (이민서). 와이어프레임 S08_FoundDetail.
  * 서버 GET /found/{id} → 가림 처리된 사진, 상태 배지, AI 태그, 장소·일시·특징·보관 위치.
+ * '분실 신고하기' → S16 (미리 채움), '내 물건이에요' → 바로 수령 요청 → S20.
  */
 public class FoundDetailActivity extends AppCompatActivity {
 
@@ -50,10 +51,12 @@ public class FoundDetailActivity extends AppCompatActivity {
         }
 
         findViewById(R.id.btnLockerMap).setOnClickListener(v -> showLocker());
-        // TODO(S16): 분실 신고 화면을 만들면 연결 (이 물건의 종류·색을 미리 채워 주면 좋음)
-        findViewById(R.id.btnReportLost).setOnClickListener(v ->
-                TabBar.soon(this, "분실 신고 화면은 다음 단계에서 추가돼요"));
-        findViewById(R.id.btnMine).setOnClickListener(v -> explainClaim());
+        // S16: 이 물건의 종류·색·브랜드·건물을 미리 채워서
+        findViewById(R.id.btnReportLost).setOnClickListener(v -> {
+            if (item != null) LostReportActivity.openPrefilled(this, item);
+            else LostReportActivity.open(this);
+        });
+        findViewById(R.id.btnMine).setOnClickListener(v -> confirmClaim());
 
         ApiClient.get(this).getFound(id).enqueue(new ApiCallback<Models.FoundOut>(this) {
             @Override public void ok(Models.FoundOut body) { show(body); }
@@ -119,32 +122,43 @@ public class FoundDetailActivity extends AppCompatActivity {
         table.addView(row);
     }
 
-    /** S09 보관함 위치. 지도 화면을 만들기 전까지는 찾아가는 길을 대화상자로 */
+    /** S09 보관함 위치 */
     private void showLocker() {
         if (item == null || item.locker == null) return;
-        Models.Locker l = item.locker;
-        StringBuilder msg = new StringBuilder();
-        msg.append(l.building);
-        if (l.location != null) msg.append("\n").append(l.location);
-        if (l.hours != null) msg.append("\n\n운영 시간: ").append(l.hours);
-        new AlertDialog.Builder(this)
-                .setTitle(l.name)
-                .setMessage(msg.toString())
-                .setPositiveButton("확인", null)
-                .show();
+        StorageMapActivity.open(this, item.locker);
     }
 
     /**
-     * '내 물건이에요'. 수령(S20)은 매칭(match_id)이 있어야 해서 주희선 서버와 연결이 필요하다.
-     * 지금은 분실 신고 → AI 매칭 흐름을 안내한다. (팀 결정 필요: 08 에서 바로 수령 요청을 허용할지)
+     * '내 물건이에요' — 매칭(AI 비교) 없이도 바로 수령 요청 (팀 결정).
+     * 매칭 서버 POST /found-items/{id}/claim: 내 신고와 이미 매칭돼 있으면 그 매칭을, 없으면
+     * '직접 수령 요청'을 만들어 수령 대기(7일)로 바꾼다 → S20 수령 안내.
+     * 본인 확인은 행정실에서 학교 메일 + 수령 코드로 한다.
      */
-    private void explainClaim() {
+    private void confirmClaim() {
+        if (item == null) return;
         new AlertDialog.Builder(this)
-                .setTitle("내 물건인가요?")
-                .setMessage("분실 신고를 남기면 AI가 이 물건과 비교해서, 일치하면 수령 방법을 알려드려요.")
-                .setPositiveButton("분실 신고하기", (d, w) ->
-                        TabBar.soon(this, "분실 신고 화면은 다음 단계에서 추가돼요"))
-                .setNegativeButton("닫기", null)
+                .setTitle("내 물건이 맞나요?")
+                .setMessage("바로 수령 요청을 할게요. 7일 안에 보관함에서 수령 코드를 보여주고 찾아가세요.\n\n"
+                        + "잘 모르겠다면 분실 신고를 남기면 AI가 비교해 드려요.")
+                .setPositiveButton("수령 요청", (d, w) -> claim())
+                .setNeutralButton("분실 신고하기", (d, w) -> LostReportActivity.openPrefilled(this, item))
+                .setNegativeButton("취소", null)
                 .show();
+    }
+
+    private void claim() {
+        View btn = findViewById(R.id.btnMine);
+        btn.setEnabled(false);
+        ApiClient.match(this).claimFound(item.id).enqueue(new ApiCallback<MatchModels.ClaimOut>(this) {
+            @Override public void ok(MatchModels.ClaimOut body) {
+                btn.setEnabled(true);
+                if (body.matchId != null) ClaimActivity.open(FoundDetailActivity.this, body.matchId);
+            }
+
+            @Override public void fail(String message) {
+                super.fail(message);
+                btn.setEnabled(true);
+            }
+        });
     }
 }

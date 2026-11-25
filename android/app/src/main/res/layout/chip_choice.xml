@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 하나/여러 개 고르는 칩 (코드에서 inflate). 선택되면 검정 -->
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Material3.Chip.Filter"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:checkable="true"
+    android:textColor="@color/chip_text"
+    android:textSize="13sp"
+    app:checkedIconVisible="false"
+    app:chipBackgroundColor="@color/chip_bg"
+    app:chipCornerRadius="18dp"
+    app:chipStrokeColor="@color/chip_stroke"
+    app:chipStrokeWidth="1dp" />

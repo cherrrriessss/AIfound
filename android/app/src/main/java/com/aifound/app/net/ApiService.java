@@ -61,6 +61,28 @@ public interface ApiService {
     @GET("found/{id}")
     Call<Models.FoundOut> getFound(@Path("id") String id);
 
+    // ---------------- 분실 신고 (S16, S17, S23) ----------------
+    @POST("lost")
+    Call<Models.LostOut> createLost(@Body Models.LostIn body);
+
+    @Multipart
+    @POST("lost/{id}/photo")
+    Call<Models.LostOut> uploadLostPhoto(@Path("id") String id, @Part MultipartBody.Part image);
+
+    /** tab = null(전체) / "open"(진행 중) / "done"(완료) */
+    @GET("me/lost")
+    Call<List<Models.LostOut>> myLost(@Query("tab") String tab);
+
+    @GET("lost/{id}")
+    Call<Models.LostOut> getLost(@Path("id") String id);
+
+    @PATCH("lost/{id}")
+    Call<Models.LostOut> updateLost(@Path("id") String id, @Body Models.LostIn body);
+
+    /** '찾았어요' / '신고 종료' */
+    @POST("lost/{id}/close")
+    Call<Models.LostOut> closeLost(@Path("id") String id);
+
     @GET("me/summary")
     Call<Models.Summary> summary();
 

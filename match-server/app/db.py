@@ -30,6 +30,14 @@ def get_found(found_id: str) -> dict:
     return _parse_times(sb().table("found_items").select("*").eq("id", found_id).single().execute().data)
 
 
+def get_found_or_none(found_id: str) -> Optional[dict]:
+    try:
+        rows = sb().table("found_items").select("*").eq("id", found_id).execute().data
+    except Exception:          # id 형식이 uuid 가 아닐 때
+        return None
+    return _parse_times(rows[0]) if rows else None
+
+
 def get_lost(lost_id: str) -> dict:
     return _parse_times(sb().table("lost_reports").select("*").eq("id", lost_id).single().execute().data)
 
@@ -94,10 +102,12 @@ def get_match_for_owner(match_id: str, user_id: str) -> Optional[dict]:
 
 
 def list_matches_for_lost(lost_id: str, user_id: str) -> list[dict]:
-    """18 매칭 탭: 기준 점수 이상, 거절 안 한 후보, 일치율 높은 순."""
+    """18 매칭 탭: 기준 점수 이상, 거절 안 한 후보, 일치율 높은 순.
+    이미 '내 물건이에요'를 누른 건(claimed/received, 08 직접 수령 요청 포함)은 점수와 상관없이 보여 줌."""
     return (sb().table("matches").select(MATCH_FIELDS)
             .eq("lost_report_id", lost_id).eq("lost_reports.owner_id", user_id)
-            .neq("status", "rejected").gte("score", config.NOTIFY_THRESHOLD)
+            .neq("status", "rejected")
+            .or_(f"score.gte.{config.NOTIFY_THRESHOLD},status.in.(claimed,received)")
             .order("score", desc=True).execute().data or [])
 
 
@@ -106,6 +116,22 @@ def list_unseen_for_owner(user_id: str) -> list[dict]:
     return (sb().table("matches").select(MATCH_FIELDS)
             .eq("lost_reports.owner_id", user_id).eq("seen", False).neq("status", "rejected")
             .gte("score", config.NOTIFY_THRESHOLD).order("score", desc=True).execute().data or [])
+
+
+def find_owner_match_for_found(found_id: str, user_id: str) -> Optional[dict]:
+    """08 '내 물건이에요': 이 습득물과 내 신고 사이에 이미 매칭이 있으면 그걸 씀 (거절한 것 제외)."""
+    rows = (sb().table("matches").select(MATCH_FIELDS)
+            .eq("found_item_id", found_id).eq("lost_reports.owner_id", user_id)
+            .neq("status", "rejected").order("score", desc=True).execute().data)
+    return rows[0] if rows else None
+
+
+def create_lost_report(row: dict) -> dict:
+    return sb().table("lost_reports").insert(row).execute().data[0]
+
+
+def create_match(row: dict) -> dict:
+    return sb().table("matches").upsert(row, on_conflict="found_item_id,lost_report_id").execute().data[0]
 
 
 def update_match(match_id: str, fields: dict) -> None:
@@ -203,6 +229,20 @@ def save_token(user_id: str, token: str) -> None:
 
 def delete_token(token: str) -> None:
     sb().table("user_devices").delete().eq("fcm_token", token).execute()
+
+
+# ---------- 사진 주소 ----------
+def photo_url(path: Optional[str], seconds: int = 3600) -> Optional[str]:
+    """비공개 버킷 사진 -> 앱이 바로 띄울 수 있는 서명 URL (김준희 서버와 같은 방식). 실패하면 None."""
+    if not path:
+        return None
+    try:
+        res = sb().storage.from_(config.PHOTO_BUCKET).create_signed_url(path, seconds)
+    except Exception:
+        return None
+    if isinstance(res, dict):
+        return res.get("signedURL") or res.get("signedUrl")
+    return getattr(res, "signed_url", None) or getattr(res, "signedURL", None)
 
 
 # ---------- 로그인 사용자 확인 ----------

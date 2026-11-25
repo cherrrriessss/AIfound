@@ -13,6 +13,7 @@ import com.aifound.app.R;
 import com.aifound.app.data.FoundDraft;
 import com.aifound.app.net.ApiCallback;
 import com.aifound.app.net.ApiClient;
+import com.aifound.app.net.MatchModels;
 import com.aifound.app.net.Models;
 import com.aifound.app.util.Fmt;
 import com.aifound.app.util.TabBar;
@@ -22,7 +23,8 @@ import java.util.List;
 /**
  * S06 홈 메인 (이민서). 와이어프레임 S06_Home.
  * - 습득물 등록(S10) / 분실 신고(S16) 큰 버튼
- * - 새 매칭 후보 배너(S18) — 주희선 서버 연결 후
+ * - 새 매칭 후보 배너 (매칭 서버 GET /matches/summary) → S19 / S18
+ * - 알림함(S27) 아이콘 + 안 읽은 알림 점
  * - 최근 등록된 습득물 5개 (GET /found?size=5) → 전체보기(S07), 누르면 상세(S08)
  */
 public class HomeActivity extends AppCompatActivity {
@@ -45,15 +47,10 @@ public class HomeActivity extends AppCompatActivity {
             FoundDraft.reset();
             startActivity(new Intent(this, PhotoActivity.class));
         });
-        // TODO(S16): 분실 신고 화면을 만들면 LostReportActivity 로 연결
-        findViewById(R.id.cardLost).setOnClickListener(v ->
-                TabBar.soon(this, "분실 신고 화면은 다음 단계에서 추가돼요"));
-        // TODO(S27): 주희선 서버 /notifications 연결
-        findViewById(R.id.btnInbox).setOnClickListener(v ->
-                TabBar.soon(this, "알림함은 매칭 서버 연결 후 추가돼요"));
+        findViewById(R.id.cardLost).setOnClickListener(v -> LostReportActivity.open(this));
+        findViewById(R.id.btnInbox).setOnClickListener(v -> startActivity(new Intent(this, InboxActivity.class)));
         findViewById(R.id.tvSeeAll).setOnClickListener(v ->
                 startActivity(new Intent(this, FoundListActivity.class)));
-        // TODO(S18): 주희선 서버에서 '안 본 매칭 후보 수(matches.seen=false)'를 받아 showMatchBanner() 호출
     }
 
     @Override
@@ -68,6 +65,32 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
         loadRecent();
+        loadMatchBanner();
+        loadInboxDot();
+    }
+
+    /** S06 배너: 매칭 서버 GET /matches/summary (안 본 후보 수). 서버가 꺼져 있으면 배너만 숨김 */
+    private void loadMatchBanner() {
+        ApiClient.match(this).summary().enqueue(new ApiCallback<MatchModels.Summary>(this) {
+            @Override public void ok(MatchModels.Summary s) {
+                String title = s.top != null ? Fmt.itemName(s.top.lostAttrs) : "";
+                showMatchBanner(s.newCount, title, s.top);
+            }
+
+            @Override public void fail(String message) { showMatchBanner(0, "", null); }
+        });
+    }
+
+    /** 알림함 아이콘의 파란 점: 안 읽은 알림이 있으면 */
+    private void loadInboxDot() {
+        ApiClient.match(this).notifications().enqueue(new ApiCallback<MatchModels.NotificationList>(this) {
+            @Override public void ok(MatchModels.NotificationList body) {
+                findViewById(R.id.inboxDot).setVisibility(
+                        InboxActivity.unread(body.notifications) > 0 ? View.VISIBLE : View.GONE);
+            }
+
+            @Override public void fail(String message) { findViewById(R.id.inboxDot).setVisibility(View.GONE); }
+        });
     }
 
     private void loadRecent() {
@@ -108,11 +131,10 @@ public class HomeActivity extends AppCompatActivity {
         row.setOnClickListener(v -> FoundDetailActivity.open(this, f.id));
     }
 
-    /** S18 배너. 매칭 후보가 생기면 보이게 (주희선 서버 연결 후 호출) */
-    @SuppressWarnings("unused")
-    private void showMatchBanner(int count, String reportTitle) {
+    /** S18 배너. 1건이면 바로 S19, 여러 건이면 그 신고의 S18 목록 */
+    private void showMatchBanner(int count, String reportTitle, MatchModels.SummaryTop top) {
         View banner = findViewById(R.id.matchBanner);
-        if (count <= 0) {
+        if (count <= 0 || top == null) {
             banner.setVisibility(View.GONE);
             return;
         }
@@ -120,6 +142,9 @@ public class HomeActivity extends AppCompatActivity {
         ((TextView) findViewById(R.id.tvMatchTitle)).setText("새 매칭 후보 " + count + "건");
         ((TextView) findViewById(R.id.tvMatchSub)).setText("'" + reportTitle + "' 신고와 비슷해요");
         banner.setVisibility(View.VISIBLE);
-        banner.setOnClickListener(v -> TabBar.soon(this, "매칭 목록은 매칭 서버 연결 후 추가돼요"));
+        banner.setOnClickListener(v -> {
+            if (count == 1) MatchDetailActivity.open(this, top.matchId);
+            else MatchListActivity.open(this, top.lostReportId);
+        });
     }
 }

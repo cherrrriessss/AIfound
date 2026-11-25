@@ -43,4 +43,7 @@ dependencies {
     // 이민서 파트: 목록(RecyclerView), 사진 불러오기(Glide)
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    // S18·S23 당겨서 새로고침, S20 수령 QR 코드 만들기
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("com.google.zxing:core:3.5.3")
 }

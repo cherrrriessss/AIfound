@@ -27,6 +27,17 @@ public final class TokenStore {
 
     public static String baseUrl(Context c) { return prefs(c).getString("base_url", BuildConfig.DEFAULT_BASE_URL); }
 
+    /** 주희선 매칭 서버(8000). 김준희 서버 주소에서 포트만 바꾼다 (실제 폰도 '서버 설정' 하나로 둘 다 맞춰짐). */
+    public static String matchUrl(Context c) {
+        String base = baseUrl(c);
+        return base.contains(":8001/") ? base.replace(":8001/", ":8000/") : base;
+    }
+
+    /** S04 온보딩을 본 적 있는지 */
+    public static boolean onboarded(Context c) { return prefs(c).getBoolean("onboarded", false); }
+
+    public static void setOnboarded(Context c) { prefs(c).edit().putBoolean("onboarded", true).apply(); }
+
     /** '192.168.0.5:8000' 처럼 입력해도 'http://192.168.0.5:8000/' 으로 맞춘다. */
     public static void saveBaseUrl(Context c, String raw) {
         String u = raw.trim();

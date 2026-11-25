@@ -58,11 +58,58 @@ def claim(match: dict, now: Optional[datetime] = None) -> dict:
     return {"status": "claimed", "pickup_deadline": deadline.isoformat()}
 
 
+# ---------- 1-2) 08 습득물 상세에서 바로 '내 물건이에요' (매칭 없이) ----------
+DIRECT_REASON = "습득물 상세에서 직접 '내 물건이에요'를 눌렀어요"
+
+
+def direct_claim(found: dict, user_id: str, now: Optional[datetime] = None) -> dict:
+    """AI 매칭 결과(match_id)가 없어도 수령을 요청할 수 있게.
+
+    수령 코드·행정실 확인·수령 기록이 모두 matches 기준이라, 여기서 매칭 한 줄을 만들어
+    기존 수령 흐름(20 → 25)을 그대로 탄다.
+      - 이미 내 신고와 이 습득물 사이에 매칭이 있으면 그걸 claim
+      - 없으면 습득물 정보로 '직접 수령 요청' 분실 신고를 만들고 (임베딩 없음 → 다른 매칭엔 안 쓰임)
+        score 0, detail.direct=true 인 매칭을 만들어 claim
+    본인 확인은 행정실에서 학교 메일 + 수령 코드로 한다 (20 화면).
+    돌려줌: {"match_id", "status", "pickup_deadline", "direct"}
+    """
+    db = pipeline.db
+    now = now or datetime.now(timezone.utc)
+    match = db.find_owner_match_for_found(found["id"], user_id)
+    direct = match is None
+    if direct:
+        attrs = dict(found.get("attrs") or {})
+        attrs["direct_claim"] = True
+        found_at = found.get("found_at") or now
+        if isinstance(found_at, str):
+            found_at = datetime.fromisoformat(found_at.replace("Z", "+00:00"))
+        lost = db.create_lost_report({
+            "owner_id": user_id,
+            "category": found.get("category") or attrs.get("category") or "기타",
+            "attrs": attrs,
+            "description": DIRECT_REASON,
+            "buildings": [found["building"]] if found.get("building") else [],
+            "lost_from": (found_at - timedelta(days=1)).isoformat(),
+            "lost_to": found_at.isoformat(),
+        })
+        row = db.create_match({
+            "found_item_id": found["id"], "lost_report_id": lost["id"], "score": 0,
+            "detail": {"direct": True}, "reason": DIRECT_REASON, "short_reason": "직접 수령 요청",
+            "seen": True,
+        })
+        match = db.get_match_for_owner(row["id"], user_id)
+    if match["status"] in ("claimed", "received"):
+        return {"match_id": match["id"], "status": match["status"],
+                "pickup_deadline": match.get("pickup_deadline"), "direct": direct}
+    out = claim(match, now)
+    return {"match_id": match["id"], **out, "direct": direct}
+
+
 def guide(match: dict) -> dict:
     """20 수령 안내 화면 데이터."""
     found, locker = match["found_items"], (match["found_items"].get("lockers") or {})
     return {
-        "item": {"name": item_name(found.get("attrs")), "photo_path": found.get("photo_path")},
+        "item": {"id": found.get("id"), "name": item_name(found.get("attrs")), "photo_path": found.get("photo_path")},
         "deadline": match.get("pickup_deadline"),
         "steps": [
             {"no": 1, "title": "학교 메일 본인 확인", "done": True},
