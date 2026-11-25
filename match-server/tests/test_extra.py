@@ -86,3 +86,53 @@ def test_without_coords_only_same_building_counts(monkeypatch):
     monkeypatch.setattr(config, "BUILDING_COORDS", {})
     assert place_ratio("형남공학관", ["형남공학관"]) == 1.0
     assert place_ratio("형남공학관", ["중앙도서관"]) == 0.0
+
+
+# ---------------- 08 '내 물건이에요' 바로 수령 요청 (매칭 없이) ----------------
+class DirectDB(FakeDB):
+    def __init__(self, existing=None):
+        super().__init__()
+        self.existing, self.lost_rows, self.match_rows = existing, [], []
+
+    def find_owner_match_for_found(self, fid, uid): return self.existing
+
+    def create_lost_report(self, row):
+        row = {**row, "id": "L-direct"}; self.lost_rows.append(row); return row
+
+    def create_match(self, row):
+        row = {**row, "id": "m-direct", "status": "candidate"}; self.match_rows.append(row); return row
+
+    def get_match_for_owner(self, mid, uid):
+        return {"id": mid, "status": "candidate", "found_items": FOUND,
+                "lost_reports": {"id": "L-direct", "owner_id": uid}}
+
+
+FOUND = {"id": "F1", "finder_id": "finder", "category": "지갑", "building": "중앙도서관",
+         "found_at": NOW, "status": "stored", "attrs": {"category": "지갑", "color": "검정"}}
+
+
+def test_direct_claim_without_match(monkeypatch):
+    fdb = DirectDB(); monkeypatch.setattr(pipeline, "db", fdb)
+    r = pickup.direct_claim(FOUND, "owner", NOW)
+    assert r["match_id"] == "m-direct" and r["status"] == "claimed" and r["direct"] is True
+    lost = fdb.lost_rows[0]
+    assert lost["owner_id"] == "owner" and lost["buildings"] == ["중앙도서관"]
+    assert lost["attrs"]["direct_claim"] is True and lost["category"] == "지갑"
+    assert fdb.match_rows[0]["score"] == 0 and fdb.match_rows[0]["detail"] == {"direct": True}
+    assert ("m-direct", {"status": "claimed", "claimed_at": NOW.isoformat(),
+                         "pickup_deadline": (NOW + timedelta(days=7)).isoformat()}) in fdb.updates
+    assert fdb.inbox[0][:3] == ("finder", "owner_found", "주인이 확인했어요")
+
+
+def test_direct_claim_reuses_existing_match(monkeypatch):
+    fdb = DirectDB(existing=MATCH); monkeypatch.setattr(pipeline, "db", fdb)
+    r = pickup.direct_claim(FOUND, "owner", NOW)
+    assert r["match_id"] == "m1" and r["direct"] is False and fdb.lost_rows == []
+
+
+def test_direct_claim_already_claimed(monkeypatch):
+    fdb = DirectDB(existing={**MATCH, "status": "claimed", "pickup_deadline": "2026-11-06"})
+    monkeypatch.setattr(pipeline, "db", fdb)
+    r = pickup.direct_claim(FOUND, "owner", NOW)
+    assert r == {"match_id": "m1", "status": "claimed", "pickup_deadline": "2026-11-06", "direct": False}
+    assert fdb.updates == []

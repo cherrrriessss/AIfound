@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 선택 칩: 선택되면 검정, 아니면 흰색 (S16 종류, S26 관심 건물) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/ink" android:state_checked="true" />
+    <item android:color="@color/white" />
+</selector>

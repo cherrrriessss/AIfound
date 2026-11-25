@@ -38,7 +38,7 @@
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_bell" />
 
-            <!-- 안 읽은 알림 점. 주희선 서버 /notifications 연결 후 보이게 -->
+            <!-- 안 읽은 알림 점 (HomeActivity.loadInboxDot) -->
             <View
                 android:id="@+id/inboxDot"
                 android:layout_width="8dp"

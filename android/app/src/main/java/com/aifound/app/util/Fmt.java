@@ -112,6 +112,87 @@ public final class Fmt {
         return base + (url.startsWith("/") ? url : "/" + url);
     }
 
+    /** '10/29' */
+    public static String shortDate(String iso) {
+        ZonedDateTime t = parse(iso);
+        return t == null ? "" : t.format(DateTimeFormatter.ofPattern("M/d", Locale.KOREAN));
+    }
+
+    /** '10/30 (금) 11:20' */
+    public static String dateTimePlain(String iso) {
+        ZonedDateTime t = parse(iso);
+        return t == null ? "" : t.format(DateTimeFormatter.ofPattern("M/d (E) HH:mm", Locale.KOREAN));
+    }
+
+    /** '2026년 10월' (S25 월별 묶음) */
+    public static String month(String iso) {
+        ZonedDateTime t = parse(iso);
+        return t == null ? "" : t.format(DateTimeFormatter.ofPattern("yyyy년 M월", Locale.KOREAN));
+    }
+
+    /** S16·S17 '10/29 12–15시', 날짜가 다르면 '10/29 12시 – 10/30 9시' */
+    public static String lostRange(String fromIso, String toIso) {
+        ZonedDateTime a = parse(fromIso), b = parse(toIso);
+        if (a == null || b == null) return "";
+        String d = a.format(DateTimeFormatter.ofPattern("M/d", Locale.KOREAN));
+        if (a.toLocalDate().equals(b.toLocalDate())) {
+            return d + " " + a.getHour() + "–" + (b.getMinute() > 0 ? b.getHour() + 1 : b.getHour()) + "시";
+        }
+        return d + " " + a.getHour() + "시 – " + b.format(DateTimeFormatter.ofPattern("M/d", Locale.KOREAN))
+                + " " + b.getHour() + "시";
+    }
+
+    /** attrs(Map) 안의 글자 값. 없거나 '확인 불가'면 null */
+    public static String attr(Map<String, Object> a, String key) {
+        if (a == null) return null;
+        Object v = a.get(key);
+        if (v == null) return null;
+        String s = String.valueOf(v).trim();
+        return s.isEmpty() || "null".equals(s) || "확인 불가".equals(s) ? null : s;
+    }
+
+    /**
+     * 물건 이름 — 매칭 서버 scoring.item_name 과 같은 규칙.
+     * 예: '검정 에어팟 프로', '검정 Apple 이어폰'
+     */
+    public static String itemName(Map<String, Object> a) {
+        String title = attr(a, "title");
+        if (title != null) return title;
+        String color = attr(a, "color");
+        String model = attr(a, "model");
+        String core;
+        if (model != null) {
+            core = model;
+        } else {
+            String brand = attr(a, "brand"), cat = attr(a, "category");
+            core = ((brand != null ? brand + " " : "") + (cat != null ? cat : "")).trim();
+        }
+        String name = ((color != null ? color + " " : "") + core).trim();
+        return name.isEmpty() ? "물건" : name;
+    }
+
+    /** 습득물 장소 '공학관 3층' (매칭 서버 모양) */
+    public static String place(String building, String detail) {
+        StringBuilder sb = new StringBuilder();
+        if (building != null) sb.append(building);
+        if (detail != null && !detail.isEmpty()) {
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(detail);
+        }
+        return sb.toString();
+    }
+
+    public static String join(java.util.List<String> parts, String sep) {
+        if (parts == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (String p : parts) {
+            if (p == null || p.isEmpty()) continue;
+            if (sb.length() > 0) sb.append(sep);
+            sb.append(p);
+        }
+        return sb.toString();
+    }
+
     public static int dp(Context c, float v) {
         return Math.round(v * c.getResources().getDisplayMetrics().density);
     }

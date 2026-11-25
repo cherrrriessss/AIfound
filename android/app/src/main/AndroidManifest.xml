@@ -26,14 +26,28 @@
         <activity android:name=".ui.HomeActivity" android:launchMode="singleTop" />
         <activity android:name=".ui.FoundListActivity" android:windowSoftInputMode="adjustPan" />
         <activity android:name=".ui.FoundDetailActivity" />
-        <!-- 김준희 파트 임시 홈(로그아웃·탈퇴·내 습득물). S22 마이페이지가 생기면 지운다 -->
-        <activity android:name=".ui.TempMyPageActivity" />
         <activity android:name=".ui.PhotoActivity" />
         <activity android:name=".ui.MaskingActivity" />
         <activity android:name=".ui.AiTagsActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.FoundInfoActivity" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".ui.StorageActivity" />
         <activity android:name=".ui.FoundDoneActivity" />
+
+        <!-- 이민서 파트: S04 온보딩, S09 보관함, S16~S21 분실 신고·매칭·수령, S22~S28 마이페이지 -->
+        <activity android:name=".ui.OnboardingActivity" />
+        <activity android:name=".ui.StorageMapActivity" />
+        <activity android:name=".ui.LostReportActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.LostDoneActivity" />
+        <activity android:name=".ui.MatchListActivity" />
+        <activity android:name=".ui.MatchDetailActivity" />
+        <activity android:name=".ui.ClaimActivity" android:screenOrientation="portrait" />
+        <activity android:name=".ui.MyPageActivity" />
+        <activity android:name=".ui.MyLostActivity" />
+        <activity android:name=".ui.MyFoundActivity" />
+        <activity android:name=".ui.HistoryActivity" />
+        <activity android:name=".ui.NotiSettingActivity" />
+        <activity android:name=".ui.InboxActivity" />
+        <activity android:name=".ui.SettingsActivity" />
 
         <!-- 카메라 앱이 찍은 사진을 저장할 임시 파일 공유 -->
         <provider

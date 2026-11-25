@@ -74,6 +74,8 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ## 4. 앱이 부르는 API (이 서버, 8000)
 
 모두 헤더 `Authorization: Bearer <Supabase 로그인 토큰>` 필요. 응답은 snake_case.
+습득물·신고 사진은 `photo_path` 와 함께 앱이 바로 띄울 수 있는 서명 URL `photo_url` 을 붙여 준다 (18, 19, 20, 25).
+18 목록은 기준 점수 미만이어도 `claimed`/`received` 인 매칭(08 직접 요청 포함)은 보여 준다.
 
 | 화면 | API | 설명 |
 |---|---|---|
@@ -84,13 +86,14 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 | 18 매칭 탭 | `GET /lost-reports/{lost_id}/matches` | 일치율 60% 이상, 높은 순, `short_reason`, 습득물 정보 |
 | 19 매칭 상세 | `GET /matches/{id}` | `score`, `reason`, `breakdown`(속성·의미·장소·시간), 내 신고, 습득물, 보관함 |
 | 19 '내 물건이에요' | `POST /matches/{id}/claim` | 7일 수령 대기 + 습득자에게 '주인이 확인했어요' |
+| 08 '내 물건이에요' (매칭 없이) | `POST /found-items/{found_id}/claim` | 내 신고와 매칭이 있으면 그걸, 없으면 '직접 수령 요청' 신고+매칭(score 0, `detail.direct=true`)을 만들어 claim. 응답 `match_id` 로 20 화면 |
 | 21 '보내고 후보에서 제외' | `POST /matches/{id}/reject` `{"reasons": [...]}` | category / color / brand_model / place_time / other |
 | 20 수령 안내 | `GET /matches/{id}/pickup` | 물건, 기한, 보관함, 수령 코드 |
 | 20 수령 코드 | `GET /matches/{id}/pickup/code` | 6자리 + QR 문자열, `expires_in` 초 뒤 다시 호출 |
 | 20 '수령 완료 확인' | `GET /matches/{id}/pickup/status` | `received` true/false |
 | 행정실 담당자 | `POST /staff/pickups/verify` `{"code": "..."}` | 코드·QR 확인 → 수령 완료, 기록, 양쪽 알림 (`locker_staff` 등록 계정만) |
 | 25 수령 기록 | `GET /pickups?kind=all\|mine\|given` | |
-| 26 알림 설정 | `GET` / `PUT /settings/notifications` | match_alert, owner_alert, pickup_reminder, quiet_start, quiet_end, interest_buildings |
+| 26 알림 설정 | `GET` / `PUT /settings/notifications` | match_alert, owner_alert, pickup_reminder, quiet_start, quiet_end, interest_buildings (시작=끝이면 방해 금지 없음) |
 | 27 알림함 | `GET /notifications`, `POST /notifications/read-all` | 방해 금지 중에도 알림함에는 쌓임 |
 
 서버 내부용 (`X-Internal-Key`): `POST /internal/match/found/{id}`, `POST /internal/match/lost/{id}`, `POST /internal/cron/reminders`(하루 1번, 수령 기한 하루 전 알림).

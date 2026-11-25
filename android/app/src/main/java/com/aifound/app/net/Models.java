@@ -128,6 +128,51 @@ public final class Models {
         public String displayLabel;     // 보관 중 / 주인 확인됨 / 수령 완료
     }
 
+    // ---------------- 분실 신고 (S16, S17, S23) ----------------
+    /** POST /lost, PATCH /lost/{id} 공통. 브랜드·모델·특징은 비워도 된다. */
+    public static class LostIn {
+        public String category;
+        public String brand;
+        public String model;
+        public String color;
+        public List<String> features = new ArrayList<>();
+        public String description;
+        public List<String> buildings = new ArrayList<>();
+        public String lostFrom;      // ISO
+        public String lostTo;
+    }
+
+    /** 신고 직후 매칭 서버가 돌려준 비슷한 습득물 (S17) */
+    public static class LostMatch {
+        public String matchId;
+        public String foundItemId;
+        public String name;
+        public int score;
+        public String reason;
+    }
+
+    public static class LostMatchResult {
+        public int count;
+        public List<LostMatch> matches = new ArrayList<>();
+    }
+
+    public static class LostOut {
+        public String id;
+        public String category;
+        public Map<String, Object> attrs;
+        public String description;
+        public List<String> buildings = new ArrayList<>();
+        public String lostFrom;
+        public String lostTo;
+        public String photoUrl;
+        public String status;           // open / closed
+        public String createdAt;
+        public String stage;            // waiting / candidates / claimed / received / closed
+        public String stageLabel;       // 매칭 대기 / 후보 있음 / 수령 대기 / 수령 완료 / 신고 종료
+        public int matchCount;
+        public LostMatchResult match;   // POST /lost 응답에만 (매칭 서버가 꺼져 있으면 null)
+    }
+
     // ---------------- 마이페이지 숫자 (S22) ----------------
     public static class Summary {
         public int lostCount;

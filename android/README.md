@@ -14,18 +14,38 @@ Java + XML, Android Studio 프로젝트. 아래 화면이 김준희 서버(`aifo
 | S14 보관함 선택 → 등록 | `StorageActivity` | `/lockers?building=`, `POST /found` |
 | S15 등록 완료 | `FoundDoneActivity` | – |
 
-## 이민서 파트 (진행 중)
+## 이민서 파트
 
-| 화면 | 클래스 | 서버 API | 상태 |
-|---|---|---|---|
-| S06 홈 | `HomeActivity` | `/me`, `GET /found?size=5` | 완료 (매칭 배너·알림함은 8000 연결 후) |
-| S07 찾아보기 | `FoundListActivity` | `GET /found` (q, category, color, building, date_from, page) | 완료 |
-| S08 습득물 상세 | `FoundDetailActivity` | `GET /found/{id}` | 완료 ('내 물건이에요'는 매칭 연결 후) |
-| 하단 탭바 | `util/TabBar` + `layout_tabbar.xml` | – | 홈 연결, 매칭·마이페이지는 다음 단계 |
+| 화면 | 클래스 | 서버 API |
+|---|---|---|
+| S04 온보딩 (첫 가입 후 1번) | `OnboardingActivity` | – |
+| S06 홈 | `HomeActivity` | `/me`, `GET /found?size=5`, 8000 `/matches/summary`(배너), `/notifications`(알림 점) |
+| S07 찾아보기 | `FoundListActivity` | `GET /found` (q, category, color, building, date_from, page) |
+| S08 습득물 상세 | `FoundDetailActivity` | `GET /found/{id}`, 8000 `POST /found-items/{id}/claim` ('내 물건이에요') |
+| S09 보관함 위치 | `StorageMapActivity` | – (지도는 휴대폰 지도 앱으로) |
+| S16 분실 신고 / 수정 | `LostReportActivity` | `POST /lost`, `POST /lost/{id}/photo`, `PATCH /lost/{id}`, `/buildings` |
+| S17 신고 완료 | `LostDoneActivity` | (`POST /lost` 응답의 `match`) |
+| S18 분실물 매칭 탭 | `MatchListActivity` | `GET /me/lost?tab=open`, 8000 `/lost-reports/{id}/matches` |
+| S19 매칭 상세 | `MatchDetailActivity` | 8000 `/matches/{id}`, `/matches/{id}/claim` |
+| S20 수령 안내 · 코드 · QR | `ClaimActivity` | 8000 `/matches/{id}/pickup`, `/pickup/code`, `/pickup/status` |
+| S21 내 물건 아님 (시트) | `MatchDetailActivity` 안 | 8000 `/matches/{id}/reject` |
+| S22 마이페이지 | `MyPageActivity` | `/me`, `/me/summary`, 8000 `/notifications` |
+| S23 내 분실 신고 | `MyLostActivity` | `GET /me/lost`, `POST /lost/{id}/close` |
+| S24 내가 등록한 습득물 | `MyFoundActivity` | `/me/found`, `/me/summary` |
+| S25 수령 기록 | `HistoryActivity` | 8000 `/pickups?kind=` |
+| S26 알림 설정 | `NotiSettingActivity` | 8000 `GET/PUT /settings/notifications` |
+| S27 알림함 | `InboxActivity` | 8000 `/notifications`, `/notifications/read-all` |
+| S28 설정 (프로필 수정·로그아웃·탈퇴) | `SettingsActivity` (+ `ProfileActivity` 수정 모드) | `PATCH /me`, `DELETE /me` |
 
-- 예전 임시 홈(로그아웃·회원 탈퇴·내 습득물)은 `TempMyPageActivity` 로 이름만 바꿔 **마이페이지 탭**에 연결해 뒀다. S22 를 만들면 지운다.
-- 코드 안 `TODO(S16)`, `TODO(S18)` 같은 표시가 다음에 연결할 곳이다.
-- 공통 도우미: `util/Fmt` (시간 '30분 전', 장소, 사진 주소), 사진은 Glide 로 불러온다.
+- 매칭 서버(8000)는 `ApiClient.match(this)` 로 부른다. 주소는 김준희 서버 주소에서 포트만 8000 (`TokenStore.matchUrl`).
+- **S08 '내 물건이에요'는 매칭 없이 바로 수령 요청**한다 (팀 결정). 내 신고와 이미 매칭돼 있으면 그 매칭을, 없으면
+  매칭 서버가 '직접 수령 요청' 매칭(점수 0)을 만들어 같은 수령 흐름(S20 → 행정실 확인 → S25)을 탄다.
+  본인 확인은 행정실에서 학교 메일 + 수령 코드로.
+- 예전 임시 마이페이지(`TempMyPageActivity`)는 지웠다. 로그아웃·탈퇴는 S28 설정에 있다.
+- 아직 안 한 것: **S05 푸시(FCM)**. `google-services.json` 이 있어야 빌드되므로 받은 뒤 `match-server/ANDROID.md` 4번대로 붙인다.
+  푸시가 없어도 같은 내용이 S27 알림함에 쌓인다.
+- 공통 도우미: `util/Fmt` (시간·장소·물건 이름·사진 주소), `util/Ui` (선택 칩, 배지, 토글), 사진은 Glide, QR 은 zxing.
+- 빌드: Gradle 8.7 은 **JDK 17~21** 이 필요하다. Android Studio 의 Gradle JDK 를 21 로 고르기 (25 면 빌드가 바로 실패함).
 
 ## 실행 순서
 

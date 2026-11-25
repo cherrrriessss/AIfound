@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- S26 알림 설정 (와이어프레임 S26_NotiSetting). 바꾸면 바로 저장 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
+
+    <include layout="@layout/layout_header" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="20dp">
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/swMatch"
+                style="@style/AIfound.SwitchRow"
+                android:text="매칭 알림\n내 신고와 비슷한 습득물이 등록되면" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/swOwner"
+                style="@style/AIfound.SwitchRow"
+                android:text="내 습득물 소식\n주인 확인·수령 완료 시" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/swReminder"
+                style="@style/AIfound.SwitchRow"
+                android:text="수령 기한 리마인드\n보관 기한 하루 전" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/line_soft" />
+
+            <TextView
+                style="@style/AIfound.Label"
+                android:layout_marginTop="16dp"
+                android:text="관심 건물"
+                android:textSize="15sp" />
+
+            <TextView
+                style="@style/AIfound.Hint"
+                android:text="이 건물에서 등록된 습득물을 먼저 보여줘요" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/buildingGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:chipSpacingHorizontal="6dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="@color/line_soft" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/swQuiet"
+                style="@style/AIfound.SwitchRow"
+                android:text="방해 금지 시간\n이 시간엔 푸시를 보내지 않아요 (알림함에는 쌓여요)" />
+
+            <LinearLayout
+                android:id="@+id/quietRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnQuietStart"
+                    style="@style/AIfound.OutlineButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    app:strokeColor="@color/line" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:text="~"
+                    android:textColor="@color/ink" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnQuietEnd"
+                    style="@style/AIfound.OutlineButton"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    app:strokeColor="@color/line" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

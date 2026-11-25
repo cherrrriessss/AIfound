@@ -31,35 +31,52 @@ public final class ApiClient {
 
     public static Gson gson() { return GSON; }
 
+    private static MatchService matchService;
+    private static String currentMatchUrl;
+
     public static synchronized ApiService get(Context context) {
         final Context app = context.getApplicationContext();
         String baseUrl = TokenStore.baseUrl(app);
         if (service == null || !baseUrl.equals(currentBaseUrl)) {
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            logging.setLevel(HttpLoggingInterceptor.Level.BASIC);   // Logcat 에서 요청 확인 가능
-
-            OkHttpClient http = new OkHttpClient.Builder()
-                    .addInterceptor(chain -> {
-                        Request.Builder b = chain.request().newBuilder();
-                        String token = TokenStore.token(app);
-                        if (token != null) b.header("Authorization", "Bearer " + token);
-                        return chain.proceed(b.build());
-                    })
-                    .addInterceptor(logging)
-                    .connectTimeout(15, TimeUnit.SECONDS)
-                    .readTimeout(90, TimeUnit.SECONDS)     // Gemini 응답 대기
-                    .writeTimeout(60, TimeUnit.SECONDS)
-                    .build();
-
-            service = new Retrofit.Builder()
-                    .baseUrl(baseUrl)
-                    .client(http)
-                    .addConverterFactory(GsonConverterFactory.create(GSON))
-                    .build()
-                    .create(ApiService.class);
+            service = retrofit(app, baseUrl).create(ApiService.class);
             currentBaseUrl = baseUrl;
         }
         return service;
+    }
+
+    /** 주희선 매칭 서버(8000): 매칭·수령·알림. 로그인 토큰은 같은 것을 쓴다. */
+    public static synchronized MatchService match(Context context) {
+        final Context app = context.getApplicationContext();
+        String url = TokenStore.matchUrl(app);
+        if (matchService == null || !url.equals(currentMatchUrl)) {
+            matchService = retrofit(app, url).create(MatchService.class);
+            currentMatchUrl = url;
+        }
+        return matchService;
+    }
+
+    private static Retrofit retrofit(Context app, String baseUrl) {
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(HttpLoggingInterceptor.Level.BASIC);   // Logcat 에서 요청 확인 가능
+
+        OkHttpClient http = new OkHttpClient.Builder()
+                .addInterceptor(chain -> {
+                    Request.Builder b = chain.request().newBuilder();
+                    String token = TokenStore.token(app);
+                    if (token != null) b.header("Authorization", "Bearer " + token);
+                    return chain.proceed(b.build());
+                })
+                .addInterceptor(logging)
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .readTimeout(90, TimeUnit.SECONDS)     // Gemini 응답 대기
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .build();
+
+        return new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .client(http)
+                .addConverterFactory(GsonConverterFactory.create(GSON))
+                .build();
     }
 
     /** 사진 파일 → multipart 'image' 필드 */

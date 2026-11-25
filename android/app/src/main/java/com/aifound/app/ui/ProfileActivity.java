@@ -34,11 +34,20 @@ public class ProfileActivity extends AppCompatActivity {
                 if (!granted) Toast.makeText(this, "설정에서 언제든 알림을 켤 수 있어요", Toast.LENGTH_SHORT).show();
             });
 
+    private static final String EXTRA_EDIT = "edit";
+    private boolean edit;          // S28 '프로필 수정'에서 왔으면 true → 저장 후 그냥 닫기
+
+    /** S28 설정 → 프로필 수정 (이민서 추가) */
+    public static void openEdit(android.app.Activity from) {
+        from.startActivity(new Intent(from, ProfileActivity.class).putExtra(EXTRA_EDIT, true));
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
-        Steps.header(this, "프로필 설정", 0);
+        edit = getIntent().getBooleanExtra(EXTRA_EDIT, false);
+        Steps.header(this, edit ? "프로필 수정" : "프로필 설정", 0);
 
         etName = findViewById(R.id.etName);
         etDept = findViewById(R.id.etDept);
@@ -55,6 +64,15 @@ public class ProfileActivity extends AppCompatActivity {
         });
         updateNotifyButton();
         btnStart.setOnClickListener(v -> save());
+        if (edit) {
+            btnStart.setText("저장");
+            ApiClient.get(this).me().enqueue(new ApiCallback<Models.Profile>(this) {
+                @Override public void ok(Models.Profile p) {
+                    if (p.name != null) etName.setText(p.name);
+                    if (p.department != null) etDept.setText(p.department);
+                }
+            });
+        }
     }
 
     private void updateNotifyButton() {
@@ -75,7 +93,14 @@ public class ProfileActivity extends AppCompatActivity {
         ApiClient.get(this).updateMe(new Models.ProfileUpdate(name, dept.isEmpty() ? null : dept))
                 .enqueue(new ApiCallback<Models.Profile>(this) {
                     @Override public void ok(Models.Profile body) {
-                        Intent i = new Intent(ProfileActivity.this, HomeActivity.class);
+                        if (edit) {
+                            Toast.makeText(ProfileActivity.this, "저장했어요", Toast.LENGTH_SHORT).show();
+                            finish();
+                            return;
+                        }
+                        // 처음 가입이면 S04 온보딩 → 홈
+                        Intent i = new Intent(ProfileActivity.this,
+                                TokenStore.onboarded(ProfileActivity.this) ? HomeActivity.class : OnboardingActivity.class);
                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(i);
                     }

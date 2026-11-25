@@ -29,6 +29,13 @@ def current_user(authorization: str = Header(default="")) -> str:
     return uid
 
 
+def _with_photo(row: Optional[dict]) -> Optional[dict]:
+    """found_items / lost_reports 행에 photo_url(서명 URL)을 붙여 앱이 바로 띄우게."""
+    if row and row.get("photo_path") and not row.get("photo_url"):
+        row["photo_url"] = db.photo_url(row["photo_path"])
+    return row
+
+
 def _own_match(match_id: str, user_id: str) -> dict:
     m = db.get_match_for_owner(match_id, user_id)
     if not m:
@@ -78,7 +85,7 @@ def lost_matches(lost_id: str, user_id: str = Depends(current_user)):
     rows = db.list_matches_for_lost(lost_id, user_id)
     return {"matches": [{
         "match_id": r["id"], "score": r["score"], "short_reason": r["short_reason"],
-        "status": r["status"], "found_item": r["found_items"],
+        "status": r["status"], "found_item": _with_photo(r["found_items"]),
     } for r in rows]}
 
 
@@ -97,7 +104,8 @@ def match_detail(match_id: str, user_id: str = Depends(current_user)):
             {"label": "장소", "max": config.W_PLACE, "value": d.get("place", 0)},
             {"label": "시간", "max": config.W_TIME, "value": d.get("time", 0)},
         ],
-        "my_report": m["lost_reports"], "found_item": m["found_items"],
+        "my_report": _with_photo(m["lost_reports"]), "found_item": _with_photo(m["found_items"]),
+        "direct": bool(d.get("direct")),
     }
 
 
@@ -108,6 +116,21 @@ def claim(match_id: str, user_id: str = Depends(current_user)):
     if m["status"] in ("claimed", "received"):
         return {"status": m["status"], "pickup_deadline": m.get("pickup_deadline")}
     return pickup.claim(m)
+
+
+@app.post("/found-items/{found_id}/claim")
+def claim_found_directly(found_id: str, user_id: str = Depends(current_user)):
+    """(08 '내 물건이에요') 매칭 결과 없이 바로 수령 요청.
+    이미 내 신고와 매칭돼 있으면 그 매칭을, 없으면 '직접 수령 요청' 매칭을 새로 만들어 claim.
+    응답의 match_id 로 20 수령 안내(/matches/{id}/pickup)를 부르면 된다."""
+    found = db.get_found_or_none(found_id)
+    if not found:
+        raise HTTPException(status_code=404, detail="습득물을 찾을 수 없어요")
+    if found.get("finder_id") == user_id:
+        raise HTTPException(status_code=409, detail="내가 등록한 습득물이에요")
+    if found.get("status") != "stored":
+        raise HTTPException(status_code=409, detail="이미 주인에게 돌아간 물건이에요")
+    return pickup.direct_claim(found, user_id)
 
 
 # ---------- 수령 (20, 25) ----------
@@ -121,7 +144,9 @@ def _claimed_match(match_id: str, user_id: str) -> dict:
 @app.get("/matches/{match_id}/pickup")
 def pickup_guide(match_id: str, user_id: str = Depends(current_user)):
     """(20 수령 안내) 물건, 수령 기한, 보관함, 수령 코드."""
-    return pickup.guide(_claimed_match(match_id, user_id))
+    g = pickup.guide(_claimed_match(match_id, user_id))
+    _with_photo(g["item"])
+    return g
 
 
 @app.get("/matches/{match_id}/pickup/code")
@@ -155,7 +180,10 @@ def staff_verify(body: VerifyIn, user_id: str = Depends(current_user)):
 @app.get("/pickups")
 def pickups(kind: str = "all", user_id: str = Depends(current_user)):
     """(25 수령 기록) kind = all / mine(내가 찾은 것) / given(내가 돌려준 것)"""
-    return {"pickups": db.list_pickups(user_id, kind)}
+    rows = db.list_pickups(user_id, kind)
+    for r in rows:
+        _with_photo(r.get("found_items"))
+    return {"pickups": rows}
 
 
 @app.post("/internal/cron/reminders", dependencies=[Depends(internal_only)])
@@ -205,6 +233,8 @@ def read_all(user_id: str = Depends(current_user)):
 
 class SettingsIn(BaseModel):
     match_alert: Optional[bool] = None
+    owner_alert: Optional[bool] = None       # 내 습득물 소식 (주인 확인·수령 완료)
+    pickup_reminder: Optional[bool] = None   # 수령 기한 하루 전
     quiet_start: Optional[time] = None      # 예: "23:00"
     quiet_end: Optional[time] = None        # 예: "08:00"
     interest_buildings: Optional[list[str]] = None
