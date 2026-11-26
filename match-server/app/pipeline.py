@@ -84,9 +84,10 @@ def notify_user(user_id: str, kind: str, title: str, body: str, data: dict) -> b
         return False
     sent = False
     for token in db.get_tokens(user_id):
-        if notify.send_match_push(token, title, body, data):
+        ok = notify.send_match_push(token, title, body, data)
+        if ok:
             sent = True
-        else:
+        elif ok is False:          # 만료된 토큰만 지운다 (키 파일이 없거나 일시 오류면 유지)
             db.delete_token(token)
     return sent
 

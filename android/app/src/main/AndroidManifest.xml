@@ -49,6 +49,22 @@
         <activity android:name=".ui.InboxActivity" />
         <activity android:name=".ui.SettingsActivity" />
 
+        <!-- S05 푸시 (FCM). 앱이 꺼져 있을 때 시스템이 띄우는 알림의 아이콘·채널 -->
+        <service android:name=".util.PushService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_bell" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/accent" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="aifound_alerts" />
+
         <!-- 카메라 앱이 찍은 사진을 저장할 임시 파일 공유 -->
         <provider
             android:name="androidx.core.content.FileProvider"

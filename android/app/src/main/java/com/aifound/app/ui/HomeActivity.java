@@ -16,6 +16,7 @@ import com.aifound.app.net.ApiClient;
 import com.aifound.app.net.MatchModels;
 import com.aifound.app.net.Models;
 import com.aifound.app.util.Fmt;
+import com.aifound.app.util.Push;
 import com.aifound.app.util.TabBar;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         TabBar.setup(this, TabBar.HOME);
+        Push.register(this);   // S05: 로그인돼 있으면 이 폰의 FCM 토큰을 매칭 서버에 등록 (Firebase 설정 없으면 건너뜀)
 
         recentList = findViewById(R.id.recentList);
         tvRecentEmpty = findViewById(R.id.tvRecentEmpty);

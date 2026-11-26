@@ -35,15 +35,23 @@ Java + XML, Android Studio 프로젝트. 아래 화면이 김준희 서버(`aifo
 | S25 수령 기록 | `HistoryActivity` | 8000 `/pickups?kind=` |
 | S26 알림 설정 | `NotiSettingActivity` | 8000 `GET/PUT /settings/notifications` |
 | S27 알림함 | `InboxActivity` | 8000 `/notifications`, `/notifications/read-all` |
-| S28 설정 (프로필 수정·로그아웃·탈퇴) | `SettingsActivity` (+ `ProfileActivity` 수정 모드) | `PATCH /me`, `DELETE /me` |
+| S05 푸시 알림 | `util/PushService`, `util/Push` | 8000 `POST /devices` |
+| S28 설정 (프로필 수정·로그아웃·탈퇴·약관) | `SettingsActivity` (+ `ProfileActivity` 수정 모드) | `PATCH /me`, `DELETE /me` |
 
 - 매칭 서버(8000)는 `ApiClient.match(this)` 로 부른다. 주소는 김준희 서버 주소에서 포트만 8000 (`TokenStore.matchUrl`).
 - **S08 '내 물건이에요'는 매칭 없이 바로 수령 요청**한다 (팀 결정). 내 신고와 이미 매칭돼 있으면 그 매칭을, 없으면
   매칭 서버가 '직접 수령 요청' 매칭(점수 0)을 만들어 같은 수령 흐름(S20 → 행정실 확인 → S25)을 탄다.
   본인 확인은 행정실에서 학교 메일 + 수령 코드로.
 - 예전 임시 마이페이지(`TempMyPageActivity`)는 지웠다. 로그아웃·탈퇴는 S28 설정에 있다.
-- 아직 안 한 것: **S05 푸시(FCM)**. `google-services.json` 이 있어야 빌드되므로 받은 뒤 `match-server/ANDROID.md` 4번대로 붙인다.
-  푸시가 없어도 같은 내용이 S27 알림함에 쌓인다.
+- **S05 푸시(FCM)**: `util/PushService`(받기·알림 띄우기), `util/Push`(토큰 등록·누르면 갈 화면).
+  - 켜는 법: Firebase 콘솔의 **`google-services.json`** 을 `android/app/` 에 넣고 다시 빌드 (깃에는 안 올림).
+    파일이 없으면 푸시만 꺼진 채로 그대로 빌드·실행된다.
+  - 서버 쪽: Firebase 서비스 계정 키를 `match-server/firebase-service-account.json` 에 두기 (`.env` 의 `FIREBASE_CREDENTIALS`).
+    없으면 서버는 푸시만 건너뛰고 S27 알림함에는 그대로 저장한다.
+  - 홈(S06)에 들어올 때 토큰을 `POST /devices` 로 등록, 로그아웃·탈퇴 때 토큰 삭제.
+  - 알림을 누르면 (앱이 꺼져 있어도) 홈 위에 바로 화면이 열린다: match → S19, reminder → S20,
+    owner_found → S24, received → S25. S27 알림함에서 누를 때도 같은 규칙.
+- S28 이용약관 문구 넣음 (`SettingsActivity.TERMS`). 시행일 등은 팀에서 바꿔도 됨.
 - 공통 도우미: `util/Fmt` (시간·장소·물건 이름·사진 주소), `util/Ui` (선택 칩, 배지, 토글), 사진은 Glide, QR 은 zxing.
 - 빌드: Gradle 8.7 은 **JDK 17~21** 이 필요하다. Android Studio 의 Gradle JDK 를 21 로 고르기 (25 면 빌드가 바로 실패함).
 

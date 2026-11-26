@@ -136,3 +136,39 @@ def test_direct_claim_already_claimed(monkeypatch):
     r = pickup.direct_claim(FOUND, "owner", NOW)
     assert r == {"match_id": "m1", "status": "claimed", "pickup_deadline": "2026-11-06", "direct": False}
     assert fdb.updates == []
+
+
+# ---------- 푸시: 키 파일이 없거나 일시 오류여도 토큰을 지우지 않음 ----------
+class TokenDB:
+    def __init__(self):
+        self.deleted, self.saved = [], []
+
+    def add_notification(self, *a): self.saved.append(a)
+    def get_settings(self, user_id): return None
+    def get_tokens(self, user_id): return ["tok-ok", "tok-expired", "tok-later"]
+    def delete_token(self, token): self.deleted.append(token)
+
+
+def test_notify_only_deletes_expired_tokens(monkeypatch):
+    from app import pipeline
+
+    fake = TokenDB()
+    results = {"tok-ok": True, "tok-expired": False, "tok-later": None}
+
+    class N:
+        @staticmethod
+        def send_match_push(token, *a): return results[token]
+
+    monkeypatch.setattr(pipeline, "db", fake)
+    monkeypatch.setattr(pipeline, "notify", N)
+    monkeypatch.setattr(pipeline.alerts, "should_push", lambda *a, **k: True)
+    assert pipeline.notify_user("u1", "match", "t", "b", {"type": "match"}) is True
+    assert fake.deleted == ["tok-expired"]
+    assert len(fake.saved) == 1
+
+
+def test_push_skipped_without_credentials(monkeypatch):
+    from app import notify
+
+    monkeypatch.setattr(notify.config, "FIREBASE_CREDENTIALS", "/no/such/file.json")
+    assert notify.send_match_push("tok", "t", "b", {}) is None

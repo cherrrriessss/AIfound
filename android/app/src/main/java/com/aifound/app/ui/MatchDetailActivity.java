@@ -40,7 +40,12 @@ public class MatchDetailActivity extends AppCompatActivity {
     private static final String EXTRA_ID = "match_id";
 
     public static void open(Activity from, String matchId) {
-        from.startActivity(new Intent(from, MatchDetailActivity.class).putExtra(EXTRA_ID, matchId));
+        from.startActivity(intent(from, matchId));
+    }
+
+    /** S05 푸시를 눌렀을 때도 같은 화면 (util/Push) */
+    public static Intent intent(android.content.Context c, String matchId) {
+        return new Intent(c, MatchDetailActivity.class).putExtra(EXTRA_ID, matchId);
     }
 
     private String matchId;
