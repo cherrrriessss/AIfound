@@ -5,6 +5,7 @@ pydantic>=2
 google-genai
 supabase
 firebase-admin
+tzdata              # Windows 에는 시간대 정보(Asia/Seoul)가 없어서 필요 (alerts.py 방해 금지 시간)
 # tests
 pytest
 httpx

@@ -32,6 +32,7 @@ python -m venv .venv
 pip install -r requirements.txt
 copy .env.example .env
 ```
+> Windows 는 시간대 정보가 기본으로 없어서 `tzdata` 가 필요하다 (requirements.txt 에 포함). 예전에 설치한 환경이면 `pip install -r requirements.txt` 를 한 번 더 실행.
 
 `.env` 값 채우기 (주석 참고):
 - `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `INTERNAL_KEY` → **김준희 서버 `server/.env` 와 같은 값**
